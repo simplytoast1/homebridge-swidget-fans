@@ -1,0 +1,42 @@
+{
+  "name": "homebridge-swidget-fans",
+  "displayName": "Swidget ERV",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Homebridge plugin for local control of Swidget ERV (Energy Recovery Ventilator) devices",
+  "license": "MIT",
+  "author": "Simplytoast1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Simplytoast1/homebridge-swidget-fans.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Simplytoast1/homebridge-swidget-fans/issues"
+  },
+  "engines": {
+    "homebridge": "^1.8.0 || ^2.0.0-beta.0",
+    "node": "^20.18.0 || ^22.10.0 || ^24.0.0"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prepublishOnly": "npm run build",
+    "clean": "rm -rf dist/"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "swidget",
+    "erv",
+    "ventilation",
+    "fan",
+    "hvac",
+    "panasonic"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "homebridge": "^2.0.0",
+    "typescript": "^5.0.0"
+  },
+  "homepage": "https://github.com/Simplytoast1/homebridge-swidget-fans#readme"
+}

@@ -1,0 +1,69 @@
+{
+  "pluginAlias": "SwidgetERV",
+  "pluginType": "platform",
+  "singular": false,
+  "headerDisplay": "Control Swidget ERV (Energy Recovery Ventilator) devices locally.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Platform Name",
+        "type": "string",
+        "default": "Swidget ERV"
+      },
+      "devices": {
+        "title": "Devices",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Device Name",
+              "type": "string",
+              "default": "ERV",
+              "required": true
+            },
+            "host": {
+              "title": "IP Address",
+              "type": "string",
+              "required": true,
+              "format": "ipv4",
+              "description": "Local IP address of the Swidget device"
+            },
+            "accessKey": {
+              "title": "Access Key",
+              "type": "string",
+              "description": "Optional access key if set during device provisioning"
+            },
+            "pollingInterval": {
+              "title": "Polling Interval (seconds)",
+              "type": "integer",
+              "default": 30,
+              "minimum": 5,
+              "maximum": 300,
+              "description": "How often to poll the device for state updates"
+            },
+            "enableLight": {
+              "title": "Enable Light Switch",
+              "type": "boolean",
+              "default": false,
+              "description": "Expose the light switch in HomeKit (only if physically connected)"
+            },
+            "enableBoostSwitch": {
+              "title": "Enable Boost Switch",
+              "type": "boolean",
+              "default": true,
+              "description": "Expose the boost mode switch in HomeKit"
+            },
+            "enableCondensationSensor": {
+              "title": "Enable Condensation Leak Sensor",
+              "type": "boolean",
+              "default": false,
+              "description": "Expose condensation module status as a leak sensor"
+            }
+          }
+        }
+      }
+    }
+  }
+}

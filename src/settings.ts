@@ -2,7 +2,7 @@ export const PLATFORM_NAME = 'SwidgetERV';
 export const PLUGIN_NAME = 'homebridge-swidget-fans';
 
 export const DEFAULT_POLLING_INTERVAL = 30;
-export const API_TIMEOUT = 5000;
+export const API_TIMEOUT = 15000;
 export const COMMAND_SETTLE_DELAY = 500;
 export const INIT_RETRY_COUNT = 3;
 export const INIT_RETRY_DELAY = 3000;

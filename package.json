@@ -2,7 +2,7 @@
   "name": "homebridge-swidget-fans",
   "displayName": "Swidget ERV Fans",
   "type": "module",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Homebridge plugin for local control of Swidget ERV (Energy Recovery Ventilator) devices",
   "license": "MIT",
   "author": "Simplytoast1",

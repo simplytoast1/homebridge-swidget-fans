@@ -12,6 +12,7 @@ export interface SwidgetDeviceConfig {
   host: string;
   accessKey?: string;
   pollingInterval?: number;
+  enableFan?: boolean;
   enableLight?: boolean;
   enableBoostSwitch?: boolean;
   enableCondensationSensor?: boolean;

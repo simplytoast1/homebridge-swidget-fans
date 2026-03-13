@@ -43,6 +43,12 @@
               "maximum": 300,
               "description": "How often to poll the device for state updates"
             },
+            "enableFan": {
+              "title": "Enable Fan Control",
+              "type": "boolean",
+              "default": true,
+              "description": "Expose the fan speed control in HomeKit"
+            },
             "enableLight": {
               "title": "Enable Light Switch",
               "type": "boolean",

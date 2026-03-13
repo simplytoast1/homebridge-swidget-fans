@@ -21,7 +21,7 @@ export class SwidgetERVAccessory {
   private readonly api: SwidgetApi;
   private readonly hap: HAP;
 
-  private fanService!: Service;
+  private fanService?: Service;
   private boostService?: Service;
   private lightService?: Service;
   private condensationService?: Service;
@@ -57,24 +57,32 @@ export class SwidgetERVAccessory {
   }
 
   private setupFanService(): void {
-    this.fanService =
-      this.accessory.getService(this.hap.Service.Fanv2) ||
-      this.accessory.addService(this.hap.Service.Fanv2, this.config.name);
+    const enableFan = this.config.enableFan !== false;
+    if (enableFan) {
+      this.fanService =
+        this.accessory.getService(this.hap.Service.Fanv2) ||
+        this.accessory.addService(this.hap.Service.Fanv2, this.config.name);
 
-    this.fanService.getCharacteristic(this.hap.Characteristic.Active)
-      .onGet(() => this.handleGetActive())
-      .onSet((value) => this.handleSetActive(value));
+      this.fanService.getCharacteristic(this.hap.Characteristic.Active)
+        .onGet(() => this.handleGetActive())
+        .onSet((value) => this.handleSetActive(value));
 
-    this.fanService.getCharacteristic(this.hap.Characteristic.RotationSpeed)
-      .onGet(() => this.handleGetRotationSpeed())
-      .onSet((value) => this.handleSetRotationSpeed(value));
+      this.fanService.getCharacteristic(this.hap.Characteristic.RotationSpeed)
+        .onGet(() => this.handleGetRotationSpeed())
+        .onSet((value) => this.handleSetRotationSpeed(value));
 
-    this.fanService.getCharacteristic(this.hap.Characteristic.CurrentFanState)
-      .onGet(() => this.handleGetCurrentFanState());
+      this.fanService.getCharacteristic(this.hap.Characteristic.CurrentFanState)
+        .onGet(() => this.handleGetCurrentFanState());
 
-    this.fanService.getCharacteristic(this.hap.Characteristic.TargetFanState)
-      .onGet(() => this.hap.Characteristic.TargetFanState.MANUAL)
-      .onSet(() => { /* always manual */ });
+      this.fanService.getCharacteristic(this.hap.Characteristic.TargetFanState)
+        .onGet(() => this.hap.Characteristic.TargetFanState.MANUAL)
+        .onSet(() => { /* always manual */ });
+    } else {
+      const existing = this.accessory.getService(this.hap.Service.Fanv2);
+      if (existing) {
+        this.accessory.removeService(existing);
+      }
+    }
   }
 
   private setupOptionalServices(): void {
@@ -93,7 +101,7 @@ export class SwidgetERVAccessory {
         .onGet(() => this.handleGetBoost())
         .onSet((value) => this.handleSetBoost(value));
 
-      this.fanService.addLinkedService(this.boostService);
+      this.fanService?.addLinkedService(this.boostService);
     } else {
       const existing = this.accessory.getService('Boost');
       if (existing) {
@@ -112,7 +120,7 @@ export class SwidgetERVAccessory {
         .onGet(() => this.handleGetLight())
         .onSet((value) => this.handleSetLight(value));
 
-      this.fanService.addLinkedService(this.lightService);
+      this.fanService?.addLinkedService(this.lightService);
     } else {
       const existing = this.accessory.getService('Light');
       if (existing) {
@@ -130,7 +138,7 @@ export class SwidgetERVAccessory {
       this.condensationService.getCharacteristic(this.hap.Characteristic.LeakDetected)
         .onGet(() => this.handleGetCondensation());
 
-      this.fanService.addLinkedService(this.condensationService);
+      this.fanService?.addLinkedService(this.condensationService);
     } else {
       const existing = this.accessory.getService(this.hap.Service.LeakSensor);
       if (existing) {
@@ -285,9 +293,11 @@ export class SwidgetERVAccessory {
       ? this.hap.Characteristic.CurrentFanState.BLOWING_AIR
       : this.hap.Characteristic.CurrentFanState.IDLE;
 
-    this.fanService.updateCharacteristic(this.hap.Characteristic.Active, active);
-    this.fanService.updateCharacteristic(this.hap.Characteristic.RotationSpeed, cfmToPercent(cfm));
-    this.fanService.updateCharacteristic(this.hap.Characteristic.CurrentFanState, fanState);
+    if (this.fanService) {
+      this.fanService.updateCharacteristic(this.hap.Characteristic.Active, active);
+      this.fanService.updateCharacteristic(this.hap.Characteristic.RotationSpeed, cfmToPercent(cfm));
+      this.fanService.updateCharacteristic(this.hap.Characteristic.CurrentFanState, fanState);
+    }
 
     if (this.boostService) {
       this.boostService.updateCharacteristic(

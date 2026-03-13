@@ -66,6 +66,7 @@ Add this to the `platforms` array in your `config.json`:
 | `host` | Yes | — | Local IP address of the Swidget device |
 | `accessKey` | No | — | Access key, if you set one during device provisioning |
 | `pollingInterval` | No | `30` | How often (in seconds) to check the device for status updates. Range: 5–300 |
+| `enableFan` | No | `true` | Show the fan speed control in HomeKit |
 | `enableBoostSwitch` | No | `true` | Show the boost mode switch in HomeKit |
 | `enableLight` | No | `false` | Show the light switch in HomeKit. Only turn this on if your ERV actually has a light wired to it |
 | `enableCondensationSensor` | No | `false` | Show a leak sensor that triggers when the condensation module activates |

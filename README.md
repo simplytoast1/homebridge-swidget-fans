@@ -12,6 +12,7 @@ This plugin talks directly to your Swidget ERV controller (pesna_fv05) over your
 
 - **Fan speed control** with a slider that maps to the device's supported CFM values
 - **Boost mode** as a switch you can toggle from the Home app or with Siri
+- **Always On mode** — a switch that automatically re-activates boost if it detects the fan has turned off
 - **Light control** (if your installation has a light wired up)
 - **Condensation alerts** via a leak sensor (if you want to know when the condensation module activates)
 
@@ -140,6 +141,10 @@ The light function is reported by the device hardware but may not be physically 
 **What does the Boost switch do?**
 
 Boost turns the fan on at full power (150 CFM). When you turn boost off, the fan turns off completely. Think of it as a "max power" button — useful for quickly clearing steam or odors. The fan speed slider will update to reflect the actual speed during the next poll.
+
+**What does the Always On switch do?**
+
+When Always On is enabled, the plugin monitors the fan on each poll. If it detects the fan has turned off (0 CFM), it automatically sends a boost command to turn it back on at full power. This is useful if you want the ERV running continuously and don't want it to stay off if someone or something turns it off. Toggle the switch off in HomeKit to disable this behavior. Always On resets to off when Homebridge restarts.
 
 ## Supported Hardware
 

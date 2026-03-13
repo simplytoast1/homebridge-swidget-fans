@@ -61,6 +61,12 @@
               "default": true,
               "description": "Expose the boost mode switch in HomeKit"
             },
+            "enableAlwaysOn": {
+              "title": "Enable Always On Switch",
+              "type": "boolean",
+              "default": false,
+              "description": "Expose an Always On switch — when enabled, automatically activates boost if the fan is detected as off"
+            },
             "enableCondensationSensor": {
               "title": "Enable Condensation Leak Sensor",
               "type": "boolean",

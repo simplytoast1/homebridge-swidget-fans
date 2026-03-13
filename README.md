@@ -68,6 +68,7 @@ Add this to the `platforms` array in your `config.json`:
 | `pollingInterval` | No | `30` | How often (in seconds) to check the device for status updates. Range: 5–300 |
 | `enableFan` | No | `true` | Show the fan speed control in HomeKit |
 | `enableBoostSwitch` | No | `true` | Show the boost mode switch in HomeKit |
+| `enableAlwaysOn` | No | `false` | Show an Always On switch — when on, automatically activates boost if the fan turns off |
 | `enableLight` | No | `false` | Show the light switch in HomeKit. Only turn this on if your ERV actually has a light wired to it |
 | `enableCondensationSensor` | No | `false` | Show a leak sensor that triggers when the condensation module activates |
 

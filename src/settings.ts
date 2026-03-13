@@ -15,6 +15,7 @@ export interface SwidgetDeviceConfig {
   enableFan?: boolean;
   enableLight?: boolean;
   enableBoostSwitch?: boolean;
+  enableAlwaysOn?: boolean;
   enableCondensationSensor?: boolean;
 }
 

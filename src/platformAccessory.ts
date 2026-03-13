@@ -25,9 +25,11 @@ export class SwidgetERVAccessory {
   private boostService?: Service;
   private lightService?: Service;
   private condensationService?: Service;
+  private alwaysOnService?: Service;
 
   private state: SwidgetComponentState | null = null;
   private lastCfm = 50;
+  private alwaysOn = false;
   private pollTimer?: ReturnType<typeof setInterval>;
   private reachable = false;
 
@@ -123,6 +125,29 @@ export class SwidgetERVAccessory {
       this.fanService?.addLinkedService(this.lightService);
     } else {
       const existing = this.accessory.getService('Light');
+      if (existing) {
+        this.accessory.removeService(existing);
+      }
+    }
+
+    // Always On switch
+    const enableAlwaysOn = this.config.enableAlwaysOn ?? false;
+    if (enableAlwaysOn) {
+      this.alwaysOnService =
+        this.accessory.getService('Always On') ||
+        this.accessory.addService(this.hap.Service.Switch, 'Always On', 'always-on');
+      this.alwaysOnService.setCharacteristic(this.hap.Characteristic.Name, 'Always On');
+
+      this.alwaysOnService.getCharacteristic(this.hap.Characteristic.On)
+        .onGet(() => this.alwaysOn)
+        .onSet((value) => {
+          this.alwaysOn = value as boolean;
+          this.log.info(`Always On mode: ${this.alwaysOn ? 'enabled' : 'disabled'}`);
+        });
+
+      this.fanService?.addLinkedService(this.alwaysOnService);
+    } else {
+      const existing = this.accessory.getService('Always On');
       if (existing) {
         this.accessory.removeService(existing);
       }
@@ -271,6 +296,14 @@ export class SwidgetERVAccessory {
       }
 
       this.updateCharacteristics();
+
+      // Always On: if fan is off and always-on is enabled, turn on boost
+      if (this.alwaysOn && this.state.exhaust.cfm === 0 && this.state.boost.mode !== 'on') {
+        this.log.info('Always On: fan is off, activating boost');
+        this.api.setBoost(true).catch((err) => {
+          this.log.warn(`Always On: failed to activate boost: ${err}`);
+        });
+      }
 
       this.log.debug(
         `Poll: cfm=${this.state.exhaust.cfm}, boost=${this.state.boost.mode}, ` +

@@ -13,7 +13,6 @@ import {
   SwidgetDeviceConfig,
   SwidgetComponentState,
   SwidgetSummary,
-  COMMAND_SETTLE_DELAY,
   DEFAULT_POLLING_INTERVAL,
 } from './settings.js';
 import { percentToCFM, cfmToPercent } from './speedMapping.js';
@@ -194,7 +193,6 @@ export class SwidgetERVAccessory {
         this.log.info('Turning fan off');
         await this.api.setExhaustCFM(0);
       }
-      await this.delayedPoll();
     } catch (error) {
       this.log.error(`Failed to set active state: ${error}`);
       throw new this.hap.HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
@@ -210,7 +208,6 @@ export class SwidgetERVAccessory {
         this.lastCfm = cfm;
       }
       await this.api.setExhaustCFM(cfm);
-      await this.delayedPoll();
     } catch (error) {
       this.log.error(`Failed to set rotation speed: ${error}`);
       throw new this.hap.HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
@@ -222,7 +219,6 @@ export class SwidgetERVAccessory {
       const on = value as boolean;
       this.log.info(`Setting boost: ${on ? 'on' : 'off'}`);
       await this.api.setBoost(on);
-      await this.delayedPoll();
     } catch (error) {
       this.log.error(`Failed to set boost: ${error}`);
       throw new this.hap.HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
@@ -234,7 +230,6 @@ export class SwidgetERVAccessory {
       const on = value as boolean;
       this.log.info(`Setting light: ${on ? 'on' : 'off'}`);
       await this.api.setLight(on);
-      await this.delayedPoll();
     } catch (error) {
       this.log.error(`Failed to set light: ${error}`);
       throw new this.hap.HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
@@ -317,11 +312,6 @@ export class SwidgetERVAccessory {
           : this.hap.Characteristic.LeakDetected.LEAK_NOT_DETECTED,
       );
     }
-  }
-
-  private async delayedPoll(): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, COMMAND_SETTLE_DELAY));
-    await this.pollState();
   }
 
   private ensureReachable(): void {

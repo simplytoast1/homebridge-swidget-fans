@@ -35,7 +35,7 @@ export class SwidgetERVAccessory {
   constructor(
     private readonly log: Logger,
     private readonly accessory: PlatformAccessory,
-    private readonly homebridgeApi: API,
+    homebridgeApi: API,
     private readonly config: SwidgetDeviceConfig,
     private readonly summary: SwidgetSummary,
   ) {

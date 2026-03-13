@@ -6,7 +6,7 @@ export class SwidgetApi {
   private readonly baseUrl: string;
 
   constructor(
-    private readonly host: string,
+    host: string,
     private readonly log: Logger,
     private readonly accessKey?: string,
   ) {

@@ -10,7 +10,7 @@ export function percentToCFM(percent: number): number {
 
 export function cfmToPercent(cfm: number): number {
   if (cfm <= 0) return 0;
-  const index = NON_ZERO_CFM.indexOf(cfm);
+  const index = NON_ZERO_CFM.indexOf(cfm as typeof NON_ZERO_CFM[number]);
   if (index === -1) return 0;
   return Math.round((index / (NON_ZERO_CFM.length - 1)) * 100);
 }

@@ -2,7 +2,7 @@
   "pluginAlias": "SwidgetERV",
   "pluginType": "platform",
   "singular": false,
-  "headerDisplay": "Control Swidget ERV (Energy Recovery Ventilator) devices locally.",
+  "headerDisplay": "Control Swidget ERV Fans (Energy Recovery Ventilator) locally.",
   "schema": {
     "type": "object",
     "properties": {

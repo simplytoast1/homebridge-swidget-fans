@@ -4,7 +4,7 @@
 
 # homebridge-swidget-fans
 
-Control your Swidget ERV (Energy Recovery Ventilator) through Apple HomeKit using Homebridge. Everything runs locally over your LAN — no cloud, no account required.
+Control your Swidget ERV Fans (Energy Recovery Ventilator) through Apple HomeKit using Homebridge. Everything runs locally over your LAN — no cloud, no account required.
 
 ## What This Plugin Does
 

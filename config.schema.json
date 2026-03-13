@@ -20,13 +20,11 @@
             "name": {
               "title": "Device Name",
               "type": "string",
-              "default": "ERV",
-              "required": true
+              "default": "ERV"
             },
             "host": {
               "title": "IP Address",
               "type": "string",
-              "required": true,
               "format": "ipv4",
               "description": "Local IP address of the Swidget device"
             },
@@ -73,7 +71,8 @@
               "default": false,
               "description": "Expose condensation module status as a leak sensor"
             }
-          }
+          },
+          "required": ["name", "host"]
         }
       }
     }

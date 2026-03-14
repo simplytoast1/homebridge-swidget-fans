@@ -32,6 +32,7 @@ export class SwidgetERVAccessory {
   private alwaysOn = false;
   private pollTimer?: ReturnType<typeof setInterval>;
   private reachable = false;
+  private polling = false;
 
   constructor(
     private readonly log: Logger,
@@ -226,6 +227,7 @@ export class SwidgetERVAccessory {
         this.log.info('Turning fan off');
         await this.api.setExhaustCFM(0);
       }
+      this.schedulePoll();
     } catch (error) {
       this.log.error(`Failed to set active state: ${error}`);
       throw new this.hap.HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
@@ -241,6 +243,7 @@ export class SwidgetERVAccessory {
         this.lastCfm = cfm;
       }
       await this.api.setExhaustCFM(cfm);
+      this.schedulePoll();
     } catch (error) {
       this.log.error(`Failed to set rotation speed: ${error}`);
       throw new this.hap.HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
@@ -252,6 +255,7 @@ export class SwidgetERVAccessory {
       const on = value as boolean;
       this.log.info(`Setting boost: ${on ? 'on' : 'off'}`);
       await this.api.setBoost(on);
+      this.schedulePoll();
     } catch (error) {
       this.log.error(`Failed to set boost: ${error}`);
       throw new this.hap.HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
@@ -263,6 +267,7 @@ export class SwidgetERVAccessory {
       const on = value as boolean;
       this.log.info(`Setting light: ${on ? 'on' : 'off'}`);
       await this.api.setLight(on);
+      this.schedulePoll();
     } catch (error) {
       this.log.error(`Failed to set light: ${error}`);
       throw new this.hap.HapStatusError(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
@@ -278,6 +283,23 @@ export class SwidgetERVAccessory {
     this.pollTimer = setInterval(() => this.pollState(), interval);
   }
 
+  /**
+   * Reset the poll timer and poll soon after a command.
+   * This avoids stacking an extra request on top of the command —
+   * the serialized queue in SwidgetApi ensures only one request at a time.
+   */
+  private schedulePoll(): void {
+    if (this.pollTimer) {
+      clearInterval(this.pollTimer);
+    }
+    const interval = (this.config.pollingInterval ?? DEFAULT_POLLING_INTERVAL) * 1000;
+    // Poll 2 seconds after command to verify, then resume normal interval
+    setTimeout(() => {
+      this.pollState();
+      this.pollTimer = setInterval(() => this.pollState(), interval);
+    }, 2000);
+  }
+
   stopPolling(): void {
     if (this.pollTimer) {
       clearInterval(this.pollTimer);
@@ -286,9 +308,18 @@ export class SwidgetERVAccessory {
   }
 
   private async pollState(): Promise<void> {
+    if (this.polling) {
+      return; // skip if previous poll is still in-flight
+    }
+    this.polling = true;
+
     try {
       const fullState = await this.api.getState();
       this.state = fullState.host.components['0'];
+
+      if (!this.reachable) {
+        this.log.info(`Device ${this.config.host} is now reachable`);
+      }
       this.reachable = true;
 
       if (this.state.exhaust.cfm > 0) {
@@ -310,8 +341,13 @@ export class SwidgetERVAccessory {
         `power=${this.state.power.current}W, rssi=${fullState.connection.rssi}dBm`,
       );
     } catch (error) {
+      if (this.reachable) {
+        this.log.warn(`Device ${this.config.host} is unreachable`);
+      }
+      this.log.debug(`Poll failed for ${this.config.host}: ${error}`);
       this.reachable = false;
-      this.log.warn(`Failed to poll ${this.config.host}: ${error}`);
+    } finally {
+      this.polling = false;
     }
   }
 

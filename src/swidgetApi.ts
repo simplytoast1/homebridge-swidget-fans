@@ -4,6 +4,7 @@ import { ALLOWED_CFM } from './speedMapping.js';
 
 export class SwidgetApi {
   private readonly baseUrl: string;
+  private pending: Promise<unknown> = Promise.resolve();
 
   constructor(
     host: string,
@@ -14,14 +15,40 @@ export class SwidgetApi {
   }
 
   async getSummary(): Promise<SwidgetSummary> {
-    return this.get('/summary') as Promise<SwidgetSummary>;
+    return this.enqueue(() => this.get('/summary')) as Promise<SwidgetSummary>;
   }
 
   async getState(): Promise<SwidgetState> {
-    return this.get('/state') as Promise<SwidgetState>;
+    return this.enqueue(() => this.get('/state')) as Promise<SwidgetState>;
   }
 
-  async sendCommand(command: object): Promise<unknown> {
+  async setExhaustCFM(cfm: number): Promise<void> {
+    if (!ALLOWED_CFM.includes(cfm as typeof ALLOWED_CFM[number])) {
+      this.log.warn(`Invalid CFM value ${cfm}, ignoring command`);
+      return;
+    }
+    await this.enqueue(() => this.post({ host: { components: { '0': { exhaust: { cfm } } } } }));
+  }
+
+  async setBoost(on: boolean): Promise<void> {
+    await this.enqueue(() => this.post({ host: { components: { '0': { boost: { mode: on ? 'on' : 'off' } } } } }));
+  }
+
+  async setLight(on: boolean): Promise<void> {
+    await this.enqueue(() => this.post({ host: { components: { '0': { light: { on } } } } }));
+  }
+
+  /**
+   * Serialize all HTTP requests so only one is in-flight at a time.
+   * Prevents overwhelming the ESP32 device.
+   */
+  private enqueue<T>(fn: () => Promise<T>): Promise<T> {
+    const next = this.pending.catch(() => {/* ignore prior errors */}).then(() => fn());
+    this.pending = next;
+    return next;
+  }
+
+  private async post(command: object): Promise<unknown> {
     const url = `${this.baseUrl}/command`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), API_TIMEOUT);
@@ -47,28 +74,6 @@ export class SwidgetApi {
     } finally {
       clearTimeout(timeout);
     }
-  }
-
-  async setExhaustCFM(cfm: number): Promise<void> {
-    if (!ALLOWED_CFM.includes(cfm as typeof ALLOWED_CFM[number])) {
-      this.log.warn(`Invalid CFM value ${cfm}, ignoring command`);
-      return;
-    }
-    await this.sendCommand({
-      host: { components: { '0': { exhaust: { cfm } } } },
-    });
-  }
-
-  async setBoost(on: boolean): Promise<void> {
-    await this.sendCommand({
-      host: { components: { '0': { boost: { mode: on ? 'on' : 'off' } } } },
-    });
-  }
-
-  async setLight(on: boolean): Promise<void> {
-    await this.sendCommand({
-      host: { components: { '0': { light: { on } } } },
-    });
   }
 
   private async get(path: string): Promise<unknown> {

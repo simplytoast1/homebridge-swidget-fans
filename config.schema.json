@@ -66,10 +66,10 @@
               "description": "Expose an Always On switch — when enabled, automatically activates boost if the fan is detected as off"
             },
             "enableCondensationSensor": {
-              "title": "Enable Condensation Leak Sensor",
+              "title": "Enable Condensation Sensor",
               "type": "boolean",
               "default": false,
-              "description": "Expose condensation module status as a leak sensor"
+              "description": "Expose condensation module status as a contact sensor (open = condensation active)"
             }
           },
           "required": ["name", "host"]

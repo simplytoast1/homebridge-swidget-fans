@@ -14,7 +14,7 @@ This plugin talks directly to your Swidget ERV controller (pesna_fv05) over your
 - **Boost mode** as a switch you can toggle from the Home app or with Siri
 - **Always On mode** — a switch that automatically re-activates boost if it detects the fan has turned off
 - **Light control** (if your installation has a light wired up)
-- **Condensation alerts** via a leak sensor (if you want to know when the condensation module activates)
+- **Condensation alerts** via a contact sensor (if you want to know when the condensation module activates)
 
 All of these are optional and can be shown or hidden in your config.
 
@@ -71,7 +71,7 @@ Add this to the `platforms` array in your `config.json`:
 | `enableBoostSwitch` | No | `true` | Show the boost mode switch in HomeKit |
 | `enableAlwaysOn` | No | `false` | Show an Always On switch — when on, automatically activates boost if the fan turns off |
 | `enableLight` | No | `false` | Show the light switch in HomeKit. Only turn this on if your ERV actually has a light wired to it |
-| `enableCondensationSensor` | No | `false` | Show a leak sensor that triggers when the condensation module activates |
+| `enableCondensationSensor` | No | `false` | Show a contact sensor that opens when the condensation module activates. Works well with HomeKit automations |
 
 ### Multiple Devices
 

@@ -154,19 +154,25 @@ export class SwidgetERVAccessory {
       }
     }
 
-    // Condensation leak sensor
+    // Condensation contact sensor
+    // Remove old LeakSensor if upgrading from previous version
+    const oldLeakSensor = this.accessory.getService(this.hap.Service.LeakSensor);
+    if (oldLeakSensor) {
+      this.accessory.removeService(oldLeakSensor);
+    }
+
     if (this.config.enableCondensationSensor && modules.includes('condensation')) {
       this.condensationService =
-        this.accessory.getService(this.hap.Service.LeakSensor) ||
-        this.accessory.addService(this.hap.Service.LeakSensor, 'Condensation', 'condensation');
+        this.accessory.getService('Condensation') ||
+        this.accessory.addService(this.hap.Service.ContactSensor, 'Condensation', 'condensation');
       this.condensationService.setCharacteristic(this.hap.Characteristic.Name, 'Condensation');
 
-      this.condensationService.getCharacteristic(this.hap.Characteristic.LeakDetected)
+      this.condensationService.getCharacteristic(this.hap.Characteristic.ContactSensorState)
         .onGet(() => this.handleGetCondensation());
 
       this.fanService?.addLinkedService(this.condensationService);
     } else {
-      const existing = this.accessory.getService(this.hap.Service.LeakSensor);
+      const existing = this.accessory.getService('Condensation');
       if (existing) {
         this.accessory.removeService(existing);
       }
@@ -210,8 +216,8 @@ export class SwidgetERVAccessory {
     this.ensureReachable();
     const condensation = this.state?.modules?.condensation ?? 'dormant';
     return condensation !== 'dormant'
-      ? this.hap.Characteristic.LeakDetected.LEAK_DETECTED
-      : this.hap.Characteristic.LeakDetected.LEAK_NOT_DETECTED;
+      ? this.hap.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED
+      : this.hap.Characteristic.ContactSensorState.CONTACT_DETECTED;
   }
 
   // -- SET handlers --
@@ -385,10 +391,10 @@ export class SwidgetERVAccessory {
     if (this.condensationService) {
       const condensation = this.state.modules?.condensation ?? 'dormant';
       this.condensationService.updateCharacteristic(
-        this.hap.Characteristic.LeakDetected,
+        this.hap.Characteristic.ContactSensorState,
         condensation !== 'dormant'
-          ? this.hap.Characteristic.LeakDetected.LEAK_DETECTED
-          : this.hap.Characteristic.LeakDetected.LEAK_NOT_DETECTED,
+          ? this.hap.Characteristic.ContactSensorState.CONTACT_NOT_DETECTED
+          : this.hap.Characteristic.ContactSensorState.CONTACT_DETECTED,
       );
     }
   }

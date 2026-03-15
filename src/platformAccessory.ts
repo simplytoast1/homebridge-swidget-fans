@@ -33,6 +33,8 @@ export class SwidgetERVAccessory {
   private pollTimer?: ReturnType<typeof setInterval>;
   private reachable = false;
   private polling = false;
+  private consecutiveFailures = 0;
+  private static readonly FAILURE_THRESHOLD = 3;
 
   constructor(
     private readonly log: Logger,
@@ -323,6 +325,12 @@ export class SwidgetERVAccessory {
       const fullState = await this.api.getState();
       this.state = fullState.host.components['0'];
 
+      // Successful poll — reset failure counter
+      if (this.consecutiveFailures > 0) {
+        this.log.debug(`Device ${this.config.host} recovered after ${this.consecutiveFailures} failed poll(s)`);
+      }
+      this.consecutiveFailures = 0;
+
       if (!this.reachable) {
         this.log.info(`Device ${this.config.host} is now reachable`);
       }
@@ -347,11 +355,14 @@ export class SwidgetERVAccessory {
         `power=${this.state.power.current}W, rssi=${fullState.connection.rssi}dBm`,
       );
     } catch (error) {
-      if (this.reachable) {
-        this.log.warn(`Device ${this.config.host} is unreachable`);
+      this.consecutiveFailures++;
+      this.log.debug(`Poll failed for ${this.config.host} (${this.consecutiveFailures}/${SwidgetERVAccessory.FAILURE_THRESHOLD}): ${error}`);
+
+      if (this.consecutiveFailures >= SwidgetERVAccessory.FAILURE_THRESHOLD && this.reachable) {
+        this.log.warn(`Device ${this.config.host} is unreachable after ${this.consecutiveFailures} consecutive failures`);
+        this.reachable = false;
       }
-      this.log.debug(`Poll failed for ${this.config.host}: ${error}`);
-      this.reachable = false;
+      // State is preserved from last successful poll — HomeKit keeps showing last known values
     } finally {
       this.polling = false;
     }

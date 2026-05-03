@@ -47,7 +47,7 @@ export class SwidgetERVPlatform implements DynamicPlatformPlugin {
       return;
     }
 
-    const discoveredUUIDs = new Set<string>();
+    const configuredHosts = new Set<string>();
 
     for (const deviceConfig of devices) {
       if (!deviceConfig.host) {
@@ -55,28 +55,30 @@ export class SwidgetERVPlatform implements DynamicPlatformPlugin {
         continue;
       }
 
-      const uuid = await this.setupDevice(deviceConfig);
-      if (uuid) {
-        discoveredUUIDs.add(uuid);
-      }
+      configuredHosts.add(deviceConfig.host);
+      await this.setupDevice(deviceConfig);
     }
 
-    // Remove accessories no longer in config
+    // Remove accessories whose host is no longer in config. Keep cached
+    // accessories for configured-but-unreachable devices so they aren't lost
+    // from HomeKit on a transient outage at startup.
     for (const [uuid, accessory] of this.accessories) {
-      if (!discoveredUUIDs.has(uuid)) {
-        this.log.info(`Removing accessory no longer in config: ${accessory.displayName}`);
-        const handler = this.activeHandlers.get(uuid);
-        if (handler) {
-          handler.stopPolling();
-          this.activeHandlers.delete(uuid);
-        }
-        this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-        this.accessories.delete(uuid);
+      const cachedHost = accessory.context.deviceConfig?.host;
+      if (cachedHost && configuredHosts.has(cachedHost)) {
+        continue;
       }
+      this.log.info(`Removing accessory no longer in config: ${accessory.displayName}`);
+      const handler = this.activeHandlers.get(uuid);
+      if (handler) {
+        handler.stopPolling();
+        this.activeHandlers.delete(uuid);
+      }
+      this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+      this.accessories.delete(uuid);
     }
   }
 
-  private async setupDevice(deviceConfig: SwidgetDeviceConfig): Promise<string | null> {
+  private async setupDevice(deviceConfig: SwidgetDeviceConfig): Promise<void> {
     const swidgetApi = new SwidgetApi(deviceConfig.host, this.log, deviceConfig.accessKey);
 
     let summary;
@@ -95,8 +97,8 @@ export class SwidgetERVPlatform implements DynamicPlatformPlugin {
     }
 
     if (!summary) {
-      this.log.error(`Could not reach device at ${deviceConfig.host} after ${INIT_RETRY_COUNT} attempts — skipping`);
-      return null;
+      this.log.error(`Could not reach device at ${deviceConfig.host} after ${INIT_RETRY_COUNT} attempts — keeping cached accessory if present`);
+      return;
     }
 
     const uuid = this.api.hap.uuid.generate(summary.mac);
@@ -123,7 +125,5 @@ export class SwidgetERVPlatform implements DynamicPlatformPlugin {
       summary,
     );
     this.activeHandlers.set(uuid, handler);
-
-    return uuid;
   }
 }

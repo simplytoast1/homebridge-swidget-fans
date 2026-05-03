@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.10 (2026-05-03)
+
+- Fix: cached accessories were unregistered when a device was unreachable at plugin startup, causing HomeKit to lose room/scene/automation assignments. Cleanup now keys off the configured host instead of the discovered UUID, so configured-but-unreachable devices keep their cached accessory.
+
 ## 1.0.0 (2026-03-13)
 
 Initial release.

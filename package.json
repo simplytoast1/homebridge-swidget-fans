@@ -18,9 +18,15 @@
     "node": "^20.18.0 || ^22.10.0 || ^24.0.0"
   },
   "main": "dist/index.js",
+  "files": [
+    "dist",
+    "config.schema.json",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
+    "test": "npm run build && node --test test/*.test.mjs",
     "prepublishOnly": "npm run build",
     "clean": "rm -rf dist/"
   },

@@ -2,10 +2,16 @@ export const PLATFORM_NAME = 'SwidgetERV';
 export const PLUGIN_NAME = 'homebridge-swidget-fans';
 
 export const DEFAULT_POLLING_INTERVAL = 30;
+export const MIN_POLLING_INTERVAL = 5;
+export const MAX_POLLING_INTERVAL = 300;
 export const API_TIMEOUT = 15000;
-export const COMMAND_SETTLE_DELAY = 500;
+// Polls time out sooner than commands so a stalled poll cannot starve a
+// queued user command for long. Kept at 10s because 5s proved too short for
+// some devices in the field (see the 1.0.2 timeout increase).
+export const POLL_TIMEOUT = 10000;
 export const INIT_RETRY_COUNT = 3;
 export const INIT_RETRY_DELAY = 3000;
+export const RECOVERY_RETRY_DELAY = 60000;
 
 export interface SwidgetDeviceConfig {
   name: string;

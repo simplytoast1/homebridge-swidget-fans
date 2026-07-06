@@ -1,6 +1,6 @@
 import { Logger } from 'homebridge';
-import { API_TIMEOUT, SwidgetState, SwidgetSummary } from './settings.js';
-import { ALLOWED_CFM } from './speedMapping.js';
+import { API_TIMEOUT, POLL_TIMEOUT, SwidgetState, SwidgetSummary } from './settings.js';
+import { nearestAllowedCFM } from './speedMapping.js';
 
 export class SwidgetApi {
   private readonly baseUrl: string;
@@ -15,19 +15,21 @@ export class SwidgetApi {
   }
 
   async getSummary(): Promise<SwidgetSummary> {
-    return this.enqueue(() => this.get('/summary')) as Promise<SwidgetSummary>;
+    return this.enqueue(() => this.get('/summary', API_TIMEOUT)) as Promise<SwidgetSummary>;
   }
 
   async getState(): Promise<SwidgetState> {
-    return this.enqueue(() => this.get('/state')) as Promise<SwidgetState>;
+    // Short timeout: a stalled poll should fail fast instead of holding up
+    // user commands queued behind it.
+    return this.enqueue(() => this.get('/state', POLL_TIMEOUT)) as Promise<SwidgetState>;
   }
 
   async setExhaustCFM(cfm: number): Promise<void> {
-    if (!ALLOWED_CFM.includes(cfm as typeof ALLOWED_CFM[number])) {
-      this.log.warn(`Invalid CFM value ${cfm}, ignoring command`);
-      return;
+    const target = nearestAllowedCFM(cfm);
+    if (target !== cfm) {
+      this.log.debug(`Requested ${cfm} CFM is not a supported speed, snapping to ${target}`);
     }
-    await this.enqueue(() => this.post({ host: { components: { '0': { exhaust: { cfm } } } } }));
+    await this.enqueue(() => this.post({ host: { components: { '0': { exhaust: { cfm: target } } } } }));
   }
 
   async setBoost(on: boolean): Promise<void> {
@@ -76,10 +78,10 @@ export class SwidgetApi {
     }
   }
 
-  private async get(path: string): Promise<unknown> {
+  private async get(path: string, timeoutMs: number): Promise<unknown> {
     const url = `${this.baseUrl}${path}`;
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), API_TIMEOUT);
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
       const headers: Record<string, string> = {};

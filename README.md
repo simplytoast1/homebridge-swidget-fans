@@ -128,11 +128,11 @@ The plugin can't reach the device. Check that:
 - Your Homebridge server can reach the device (`ping 192.168.1.100` from the server)
 - There's no firewall or VLAN isolation blocking the connection
 
-The plugin will keep trying on each polling interval and recover automatically once the device is reachable again.
+The plugin keeps retrying and recovers automatically once the device is reachable again. If the device was already offline when Homebridge started, the plugin retries about once a minute until it comes online.
 
-**Fan speed slider feels "sticky" or jumps to unexpected values**
+**Fan speed slider feels "sticky" or moves in steps**
 
-This is normal — since the ERV only supports 10 specific speeds, the slider will snap to the nearest one. Setting 45% will round to 50% (90 CFM), for example.
+This is normal. The slider moves in 10% steps, one for each of the ERV's 10 supported speeds. Automations can still request in-between values like 45%, which round to the nearest step (50%, 90 CFM).
 
 **Light switch does nothing**
 
@@ -144,7 +144,7 @@ Boost turns the fan on at full power (150 CFM). When you turn boost off, the fan
 
 **What does the Always On switch do?**
 
-When Always On is enabled, the plugin monitors the fan on each poll. If it detects the fan has turned off (0 CFM), it automatically sends a boost command to turn it back on at full power. This is useful if you want the ERV running continuously and don't want it to stay off if someone or something turns it off. Toggle the switch off in HomeKit to disable this behavior. Always On resets to off when Homebridge restarts.
+When Always On is enabled, the plugin monitors the fan on each poll. If it detects the fan has turned off (0 CFM), it automatically sends a boost command to turn it back on at full power. This is useful if you want the ERV running continuously and don't want it to stay off if someone or something turns it off. Toggle the switch off in HomeKit to disable this behavior. The Always On setting is remembered across Homebridge restarts.
 
 ## Supported Hardware
 
